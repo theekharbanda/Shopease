@@ -1,6 +1,8 @@
 package com.example.shopease.security;
 
 import com.example.shopease.entities.User;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,8 +12,10 @@ import java.util.Collections;
 import java.util.List;
 //User detail implementation of UserDetails for security.
 
+@ToString
 public class UserPrincipal implements UserDetails {
 
+    @Getter
     private final Long id;
     private final String email;
     private final String password;
@@ -22,10 +26,6 @@ public class UserPrincipal implements UserDetails {
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     @Override
@@ -43,25 +43,6 @@ public class UserPrincipal implements UserDetails {
         return email;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = Collections.singletonList(

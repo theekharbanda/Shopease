@@ -38,10 +38,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserReqDTO userReqDTO) {
+        if(userReqDTO.isAdmin()){
+            User user =  userService.registerAdmin(userReqDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new UserRepDTO("","Admin registered successfully",true));
+        }
         User user =  userService.registerUser(userReqDTO);
-        String jwt = jwtUtil.generateToken(user.getEmail(), List.of(user.getRole().name()));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new UserRepDTO(jwt,"User registered successfully",true));
+                .body(new UserRepDTO("","User registered successfully",true));
     }
 
     @PostMapping("/login")

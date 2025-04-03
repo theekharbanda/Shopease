@@ -37,4 +37,14 @@ public class User {
     public boolean isAdmin(){
         return role.equals(Role.ADMIN);
     }
+
+    public User createAdmin(String email,String password,String name){
+        return User.builder()
+                .name(name)
+                .email(email)
+                .password(password)
+                .role(Role.ADMIN)
+                .build();
+    }
+
 }

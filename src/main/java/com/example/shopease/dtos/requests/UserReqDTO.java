@@ -17,4 +17,6 @@ public class UserReqDTO {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private boolean isAdmin;
 }

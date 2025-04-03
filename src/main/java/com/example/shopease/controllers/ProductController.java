@@ -1,18 +1,24 @@
 package com.example.shopease.controllers;
 
+import com.example.shopease.dtos.requests.AddProductReq;
 import com.example.shopease.entities.Product;
 import com.example.shopease.entities.User;
 import com.example.shopease.pojos.CustomErrorResponse;
+import com.example.shopease.security.CurrentUser;
 import com.example.shopease.security.UserPrincipal;
 import com.example.shopease.services.ProductService;
 import com.example.shopease.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -47,15 +53,16 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createProduct(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                                         @RequestBody Product product) {
+    public ResponseEntity<?> createProduct(@CurrentUser UserPrincipal userPrincipal,
+                                         @RequestBody AddProductReq addProduct) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = userService.getUserById(userPrincipal.getId());
             if (!user.isAdmin()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(new CustomErrorResponse(403, "Only admins can create products"));
             }
-            Product createdProduct = productService.createProduct(product);
+            Product createdProduct = productService.createProduct(addProduct);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

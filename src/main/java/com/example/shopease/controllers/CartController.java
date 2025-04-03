@@ -1,5 +1,6 @@
 package com.example.shopease.controllers;
 
+import com.example.shopease.dtos.requests.AddToCartReq;
 import com.example.shopease.entities.Cart;
 import com.example.shopease.entities.CartItem;
 import com.example.shopease.entities.User;
@@ -27,10 +28,10 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                                     @RequestBody CartItem cartItem) {
+                                       @RequestBody AddToCartReq addToCartReq) {
         try {
             User user = userService.getUserById(userPrincipal.getId());
-            Cart cart = cartService.addToCart(user.getId(), cartItem);
+            Cart cart = cartService.addToCart(user.getId(), addToCartReq);
             return ResponseEntity.ok(cart);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -84,4 +85,16 @@ public class CartController {
                     .body(new CustomErrorResponse(400, "Failed to update cart item quantity: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/total")
+    public ResponseEntity<?> getCartTotal(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        try {
+            double total = cartService.getCartTotal(userPrincipal.getId());
+            return ResponseEntity.ok(total);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new CustomErrorResponse(400, "Failed to get cart total: " + e.getMessage()));
+        }
+    }
 }
+

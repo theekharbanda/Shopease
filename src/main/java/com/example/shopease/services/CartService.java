@@ -1,5 +1,6 @@
 package com.example.shopease.services;
 
+import com.example.shopease.dtos.requests.AddToCartReq;
 import com.example.shopease.entities.Cart;
 import com.example.shopease.entities.CartItem;
 import com.example.shopease.entities.Product;
@@ -12,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -29,7 +31,7 @@ public class CartService {
     }
 
     @Transactional
-    public Cart addToCart(Long userId, CartItem cartItem) {
+    public Cart addToCart(Long userId, AddToCartReq addToCartReq) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         
@@ -42,13 +44,15 @@ public class CartService {
             user.setCart(cart);
         }
 
-        Product product = productRepo.findById(cartItem.getProduct().getId())
+        Product product = productRepo.findById(addToCartReq.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-        
-        cartItem.setCart(cart);
-        cartItem.setProduct(product);
-        cartItem.setUnitPrice(product.getPrice());
-        
+        CartItem cartItem = CartItem.builder()
+                .cart(cart)
+                .product(product)
+                .quantity(addToCartReq.getQuantity())
+                .unitPrice(product.getPrice())
+                .build();
+
         cart.getItems().add(cartItem);
         return cartRepo.save(cart);
     }
@@ -105,5 +109,18 @@ public class CartService {
 
         cartItem.setQuantity(quantity);
         return cartRepo.save(cart);
+    }
+
+    public double getCartTotal(Long id) {
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Cart cart = user.getCart();
+        if (cart == null) {
+            return 0;
+        }
+        return cart.getItems().stream()
+                .map(CartItem::calculateTotalPrice)  // Returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add)  // Sum as BigDecimal
+                .doubleValue();
     }
 }

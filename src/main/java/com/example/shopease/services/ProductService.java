@@ -1,5 +1,6 @@
 package com.example.shopease.services;
 
+import com.example.shopease.dtos.requests.AddProductReq;
 import com.example.shopease.entities.Product;
 import com.example.shopease.repos.ProductRepo;
 import jakarta.persistence.EntityNotFoundException;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 public class ProductService {
@@ -26,11 +29,17 @@ public class ProductService {
     }
 
     @Transactional
-    public Product createProduct(Product product) {
-        if (product.getId() != null) {
-            throw new IllegalArgumentException("New product cannot have an ID");
+    public Product createProduct(AddProductReq product) {
+        if (productRepo.existsByName(product.getName())) {
+            throw new IllegalArgumentException("Product name already exists");
         }
-        return productRepo.save(product);
+        Product newProduct = Product.builder()
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(BigDecimal.valueOf(product.getPrice()))
+                .stock(product.getStock())
+                .build();
+        return productRepo.save(newProduct);
     }
 
     @Transactional
